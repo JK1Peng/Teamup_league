@@ -3,70 +3,14 @@ import asyncio
 import discord
 from discord import app_commands
 from discord.ext import commands
-
-# Create a view with buttons for users to indicate if they're joining or declining an invite.
-class ReadyOrNotView(discord.ui.View):
-    
-    # Lists to track users who joined or declined the invite
-    joined_users = []
-    declined_users = []
-    initiatior: discord.User = None  # The user who started the invite
-    players: int = 0  # Number of players the initiator is looking for
-
-    # Function to send an initial message (or embed) with this view
-    async def send(self, interaction: discord.Interaction):
-        embed = self.create_embed()
-        await interaction.response.send_message(view=self, embed=embed)
-        self.message = await interaction.original_response()
-
-    # Utility function to convert a list of users into a string for display. If no users, a default string is returned.
-    def convert_user_list_to_str(self, user_list, default_str="No one"):
-        if len(user_list):
-            return "\n".join(user_list)
-        return default_str
-    
-    # Create an embed that shows who initiated the invite, who joined, and who declined.
-    def create_embed(self):
-        if self.initiatior:
-            desc = f"{self.initiatior.display_name} is looking for another {self.players - 1} players"
-        else:
-            desc = "Initiator is unknown."
-        embed = discord.Embed(title="Let's get together", description=desc)
-        embed.add_field(inline=True, name="(°ロ°)☝come", value=self.convert_user_list_to_str(self.joined_users))
-        embed.add_field(inline=True, name="❌Declined", value=self.convert_user_list_to_str(self.declined_users))
-        return embed
-
-    # Update the message with the current state of who joined and declined
-    async def update_message(self):
-        embed = self.create_embed()
-        await self.message.edit(view=self, embed=embed)
-
-    # Button interaction for joining
-    @discord.ui.button(label="Join", style=discord.ButtonStyle.green)
-    async def join_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
-        if interaction.user.display_name not in self.joined_users:
-            self.joined_users.append(interaction.user.display_name)
-        if interaction.user.display_name in self.declined_users:
-            self.declined_users.remove(interaction.user.display_name)
-        await self.update_message()
-
-    # Button interaction for declining
-    @discord.ui.button(label="Declined", style=discord.ButtonStyle.red)
-    async def decline_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.defer()
-        if interaction.user.display_name not in self.declined_users:
-            self.declined_users.append(interaction.user.display_name)
-        if interaction.user.display_name in self.joined_users:
-            self.joined_users.remove(interaction.user.display_name)
-        await self.update_message()
+from view import ReadyOrNotView
 
 # Set up the bot with the necessary command prefix and intents
 bot = commands.Bot(command_prefix="ms!", intents=discord.Intents.all())
 
 # This function starts the bot
 def run_discord_bot():
-    TOKEN = 'Your-Token-Here' 
+    TOKEN = 'MTE0OTA1NTEyMjM4MzU2OTAwNg.GaWQ2_.nMq6mksiCh_AN-aFXXSV4RxaZd_pFZe1chtE_E' 
 
     # Event that runs when the bot is ready
     @bot.event
@@ -83,9 +27,38 @@ def run_discord_bot():
     async def hello(interaction: discord.Interaction):
         await interaction.response.send_message(f'Hey {interaction.user.mention}! This is a slash command')
 
+    @app_commands.describe(gamemode="The mode you want to choose")
+    @app_commands.choices(gamemode =[
+        app_commands.Choice(name = "Normal",value = "normal"),
+        app_commands.Choice(name = "Solo/duo",value = "solo"),
+        app_commands.Choice(name = "Flex",value = "flex"),
+        app_commands.Choice(name = "Aram",value = "aram"),
+        app_commands.Choice(name = "Custom",value = "custom")
+    ])
+
+    @app_commands.describe(rank="What rank you want to play with")
+    @app_commands.choices(rank =[
+        app_commands.Choice(name = "Iron",value = "iron"),
+        app_commands.Choice(name = "Silver",value = "silver"),
+        app_commands.Choice(name = "Gold",value = "gold"),
+        app_commands.Choice(name = "Plat",value = "plat"),
+        app_commands.Choice(name = "Emerald",value = "emerald"),
+        app_commands.Choice(name = "Diamond",value = "diamond"),
+        app_commands.Choice(name = "Master",value = "master"),
+        app_commands.Choice(name = "Iron/Silver",value = "ironS"),
+        app_commands.Choice(name = "Silver/Gold",value = "silverG"),
+        app_commands.Choice(name = "Gold/Plat",value = "goldP"),
+        app_commands.Choice(name = "Plat/Emerald",value = "platE"),
+        app_commands.Choice(name = "Emerald/Diamond",value = "emeraldD"),
+        app_commands.Choice(name = "Diamond/Master",value = "diamondM"),
+        
+    ])
+
+
+    
     # Slash command to start the "team up" interaction
-    @bot.tree.command(name="teamup")
-    async def hello(interaction: discord.Interaction, players: int):
+    @bot.tree.command(name="teamup",description="place to team up!")
+    async def hello(interaction: discord.Interaction, gamemode: app_commands.Choice[str],rank:app_commands.Choice[str],players: int):
         view = ReadyOrNotView(timeout=None)
         view.initiatior = interaction.user
         view.players = players
