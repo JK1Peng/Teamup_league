@@ -7,7 +7,11 @@ from view import ReadyOrNotView
 
 # Set up the bot with the necessary command prefix and intents
 bot = commands.Bot(command_prefix="ms!", intents=discord.Intents.all())
-
+modes_list = {
+    "aram":{
+        "url":"https://cdnb.artstation.com/p/assets/images/images/051/838/615/large/sam-snow-aramicon.jpg?1658300678"
+    }
+}
 # This function starts the bot
 def run_discord_bot():
     TOKEN = 'MTE0OTA1NTEyMjM4MzU2OTAwNg.GaWQ2_.nMq6mksiCh_AN-aFXXSV4RxaZd_pFZe1chtE_E' 
@@ -54,14 +58,23 @@ def run_discord_bot():
         
     ])
 
+    @app_commands.describe(players="how many team members you need")
+    @app_commands.choices(players =[
+        app_commands.Choice(name = "1",value = 1),
+        app_commands.Choice(name = "2",value = 2),
+        app_commands.Choice(name = "3",value = 3),
+        app_commands.Choice(name = "4",value = 4)
+    ])
+
 
     
     # Slash command to start the "team up" interaction
     @bot.tree.command(name="teamup",description="place to team up!")
-    async def hello(interaction: discord.Interaction, gamemode: app_commands.Choice[str],rank:app_commands.Choice[str],players: int):
+    async def hello(interaction: discord.Interaction, gamemode: app_commands.Choice[str],rank:app_commands.Choice[str],players: app_commands.Choice[int],):
         view = ReadyOrNotView(timeout=None)
+        view.game = modes_list[gamemode.value]
         view.initiatior = interaction.user
-        view.players = players
+        view.players = players.value
         await view.send(interaction)
 
     # Basic command examples

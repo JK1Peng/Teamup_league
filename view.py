@@ -8,6 +8,7 @@ class ReadyOrNotView(discord.ui.View):
         self.joined_users = []
         self.declined_users = []
         self.initiatior = None  # The user who started the invite
+        self.game = {}
         self.players = 0  # Number of players the initiator is looking for
 
     # Function to send an initial message (or embed) with this view
@@ -25,10 +26,14 @@ class ReadyOrNotView(discord.ui.View):
     # Create an embed that shows who initiated the invite, who joined, and who declined.
     def create_embed(self):
         if self.initiatior:
-            desc = f"{self.initiatior.display_name} is looking for another {self.players - 1} players"
+            desc = f"{self.initiatior.display_name} is looking for another {self.players} players"
         else:
             desc = "Initiator is unknown."
         embed = discord.Embed(title="Let's get together", description=desc)
+
+        if self.game['url']:
+            embed.set_image(url=self.game['url'])
+
         embed.add_field(inline=True, name="(°ロ°)☝come", value=self.convert_user_list_to_str(self.joined_users))
         embed.add_field(inline=True, name="❌Declined", value=self.convert_user_list_to_str(self.declined_users))
         return embed
