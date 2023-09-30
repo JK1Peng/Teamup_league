@@ -3,7 +3,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from view import ReadyOrNotView
-
+from view import waiting_list
 
 
 modes_list = {
@@ -34,6 +34,7 @@ def format_as_table(headers, data):
 
 
 def register_commands(bot):
+    
     @app_commands.describe(gamemode="The mode you want to choose")
     @app_commands.choices(gamemode=[
         app_commands.Choice(name="Normal", value="normal"),
@@ -66,23 +67,26 @@ def register_commands(bot):
         app_commands.Choice(name="3", value=3),
         app_commands.Choice(name="4", value=4)
     ])
+    
     # Slash command to start the "team up" interaction
     @bot.tree.command(name="teamup", description="place to team up!")
     async def teamup(interaction: discord.Interaction, gamemode: app_commands.Choice[str], rank: app_commands.Choice[str], players: app_commands.Choice[int],):
-        view = ReadyOrNotView(timeout=None)
-        view.game = modes_list[gamemode.value]
+        view = ReadyOrNotView(timeout=None)    
+        # view.game = modes_list[gamemode.value]
         view.initiatior = interaction.user
         view.players = players.value
+        # waiting_list.append(interaction.user)
         await view.send(interaction)
 
     @bot.tree.command(name='table', description = "return table")
     async def send_table(interaction: discord.Interaction):
-        headers = ["Player", "Age", "City"]
-        data = [
-            ["Alice", 30, "New York"],
-            ["Bob", 25, "Los Angeles"],
-            ["Charlie", 35, "Chicago"]
-        ]
+        headers = ["Player :"+interaction.user.name, "In game name", "OPGG link"]
+        data  = []
+        if interaction.user.id in waiting_list:
+            for i in waiting_list[interaction.user.id]:
+                data.append([i.name,"testing", "testing"])
+        
+        
         table = format_as_table(headers, data)
         await interaction.response.send_message(f'{table}')
 

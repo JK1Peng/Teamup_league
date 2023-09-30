@@ -1,12 +1,17 @@
 import discord
 
+
+waiting_list = {}
+
+
+
 # Create a view with buttons for users to indicate if they're joining or declining an invite.
 class ReadyOrNotView(discord.ui.View):
     
     def __init__(self, timeout=None):
         super().__init__(timeout=timeout)   # Call the parent class's __init__ method
         self.joined_users = []
-        self.declined_users = []
+        self.quit_user = []
         self.initiatior = None  # The user who started the invite
         self.game = {}
         self.players = 0  # Number of players the initiator is looking for
@@ -31,12 +36,10 @@ class ReadyOrNotView(discord.ui.View):
             desc = "Initiator is unknown."
         embed = discord.Embed(title="Let's get together", description=desc)
 
-        if self.game['url']:
-            embed.set_image(url=self.game['url'])
+        # if self.game['url']:
+        #     embed.set_image(url=self.game['url'])
 
         embed.add_field(inline=True, name="(°ロ°)☝come", value=self.convert_user_list_to_str(self.joined_users))
-        embed.add_field(inline=True, name="❌Declined", value=self.convert_user_list_to_str(self.declined_users))
-        # embed.add_field(inline=True, name="❌Declined", value=self.convert_user_list_to_str(self.declined_users))#
         return embed
 
     # def Create_Post(self,title,description):
@@ -49,7 +52,7 @@ class ReadyOrNotView(discord.ui.View):
 
     def disable_buttons(self):
         self.join_button.disabled = True
-        self.decline_button.disabled = True
+        self.Quit_button.disabled = True#write by yuba
 
     # Update the message with the current state of who joined and declined
     async def update_message(self):
@@ -64,26 +67,20 @@ class ReadyOrNotView(discord.ui.View):
         await interaction.response.defer()
         if interaction.user.display_name not in self.joined_users:
             self.joined_users.append(interaction.user.display_name)
-        if interaction.user.display_name in self.declined_users:
-            self.declined_users.remove(interaction.user.display_name)
+        for user_id in [self.initiatior.id, interaction.user.id]:
+            if user_id not in waiting_list:
+                waiting_list[user_id] = []
+        waiting_list[self.initiatior.id].append(interaction.user)
         await self.update_message()
 
-    # Button interaction for declining
-    @discord.ui.button(label="Declined", style=discord.ButtonStyle.red)
-    async def decline_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+    # Button interaction for quit，write by yubao
+    @discord.ui.button(label="Quit", style=discord.ButtonStyle.red)
+    async def Quit_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.defer()
-        if interaction.user.display_name not in self.declined_users:
-            self.declined_users.append(interaction.user.display_name)
         if interaction.user.display_name in self.joined_users:
             self.joined_users.remove(interaction.user.display_name)
+            
+        if (self.initiatior.id in waiting_list) and (interaction.user in waiting_list[self.initiatior.id]):
+            waiting_list[self.initiatior.id].remove(interaction.user)    
         await self.update_message()
-
-    # # Button interaction for declining
-    # @discord.ui.button(label="Quit", style=discord.ButtonStyle.red)
-    # async def Quit_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-    #     await interaction.response.defer()
-    #     if interaction.user.display_name in self.declined_users:
-    #         self.joined_users.remove(interaction.user.display_name)
-    #     if interaction.user.display_name in self.joined_users:
-    #         self.joined_users.remove(interaction.user.display_name)
-    #     await self.update_message()    
+ 
