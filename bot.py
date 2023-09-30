@@ -4,19 +4,21 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from view import ReadyOrNotView
+import hello , matching
+from search import Search
+
 
 # Set up the bot with the necessary command prefix and intents
 bot = commands.Bot(command_prefix="ms!", intents=discord.Intents.all())
-modes_list = {
-    "aram":{
-        "url":"https://cdnb.artstation.com/p/assets/images/images/051/838/615/large/sam-snow-aramicon.jpg?1658300678"
-    }
-}
+
+message_history = []
+
+
 # This function starts the bot
 def run_discord_bot():
     TOKEN = 'MTE0OTA1NTEyMjM4MzU2OTAwNg.GaWQ2_.nMq6mksiCh_AN-aFXXSV4RxaZd_pFZe1chtE_E' 
-
     # Event that runs when the bot is ready
+    
     @bot.event
     async def on_ready():
         print("discord bot is ready!")
@@ -26,56 +28,24 @@ def run_discord_bot():
         except Exception as e:
             print(e)
 
-    # Slash command example
-    @bot.tree.command(name="hello")
-    async def hello(interaction: discord.Interaction):
+    # hello.register_commands(bot)
+    matching.register_commands(bot)
+    srch = Search()
+    srch.register_commands(bot)
+
+
+
+    @bot.tree.command(name="edit")
+    #1156679737482154117
+    #1157462800717852812
+    async def edit(interaction: discord.Interaction):
+        # Sending the initial response
         await interaction.response.send_message(f'Hey {interaction.user.mention}! This is a slash command')
-
-    @app_commands.describe(gamemode="The mode you want to choose")
-    @app_commands.choices(gamemode =[
-        app_commands.Choice(name = "Normal",value = "normal"),
-        app_commands.Choice(name = "Solo/duo",value = "solo"),
-        app_commands.Choice(name = "Flex",value = "flex"),
-        app_commands.Choice(name = "Aram",value = "aram"),
-        app_commands.Choice(name = "Custom",value = "custom")
-    ])
-
-    @app_commands.describe(rank="What rank you want to play with")
-    @app_commands.choices(rank =[
-        app_commands.Choice(name = "Iron",value = "iron"),
-        app_commands.Choice(name = "Silver",value = "silver"),
-        app_commands.Choice(name = "Gold",value = "gold"),
-        app_commands.Choice(name = "Plat",value = "plat"),
-        app_commands.Choice(name = "Emerald",value = "emerald"),
-        app_commands.Choice(name = "Diamond",value = "diamond"),
-        app_commands.Choice(name = "Master",value = "master"),
-        app_commands.Choice(name = "Iron/Silver",value = "ironS"),
-        app_commands.Choice(name = "Silver/Gold",value = "silverG"),
-        app_commands.Choice(name = "Gold/Plat",value = "goldP"),
-        app_commands.Choice(name = "Plat/Emerald",value = "platE"),
-        app_commands.Choice(name = "Emerald/Diamond",value = "emeraldD"),
-        app_commands.Choice(name = "Diamond/Master",value = "diamondM"),
+        # Fetching the response message
+        response_msg = await interaction.original_response()
         
-    ])
-
-    @app_commands.describe(players="how many team members you need")
-    @app_commands.choices(players =[
-        app_commands.Choice(name = "1",value = 1),
-        app_commands.Choice(name = "2",value = 2),
-        app_commands.Choice(name = "3",value = 3),
-        app_commands.Choice(name = "4",value = 4)
-    ])
-
-
-    
-    # Slash command to start the "team up" interaction
-    @bot.tree.command(name="teamup",description="place to team up!")
-    async def hello(interaction: discord.Interaction, gamemode: app_commands.Choice[str],rank:app_commands.Choice[str],players: app_commands.Choice[int],):
-        view = ReadyOrNotView(timeout=None)
-        view.game = modes_list[gamemode.value]
-        view.initiatior = interaction.user
-        view.players = players.value
-        await view.send(interaction)
+        # Editing the response message
+        await response_msg.edit(content="This is the edited content!")
 
     # Basic command examples
     @bot.command()

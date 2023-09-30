@@ -36,6 +36,7 @@ class ReadyOrNotView(discord.ui.View):
 
         embed.add_field(inline=True, name="(°ロ°)☝come", value=self.convert_user_list_to_str(self.joined_users))
         embed.add_field(inline=True, name="❌Declined", value=self.convert_user_list_to_str(self.declined_users))
+        # embed.add_field(inline=True, name="❌Declined", value=self.convert_user_list_to_str(self.declined_users))#
         return embed
 
     # def Create_Post(self,title,description):
@@ -76,3 +77,13 @@ class ReadyOrNotView(discord.ui.View):
         if interaction.user.display_name in self.joined_users:
             self.joined_users.remove(interaction.user.display_name)
         await self.update_message()
+
+    # # Button interaction for declining
+    # @discord.ui.button(label="Quit", style=discord.ButtonStyle.red)
+    # async def Quit_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+    #     await interaction.response.defer()
+    #     if interaction.user.display_name in self.declined_users:
+    #         self.joined_users.remove(interaction.user.display_name)
+    #     if interaction.user.display_name in self.joined_users:
+    #         self.joined_users.remove(interaction.user.display_name)
+    #     await self.update_message()    
