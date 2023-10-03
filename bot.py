@@ -6,6 +6,7 @@ from discord.ext import commands
 from view import ReadyOrNotView
 import hello , matching
 from search import Search
+from bind import Bind
 
 
 # Set up the bot with the necessary command prefix and intents
@@ -22,17 +23,19 @@ def run_discord_bot():
     @bot.event
     async def on_ready():
         print("discord bot is ready!")
-        try:
+        try: 
             synced = await bot.tree.sync()  # Sync commands with Discord API
             print(f'Synced {len(synced)} commands')
         except Exception as e:
             print(e)
 
+
     # hello.register_commands(bot)
     matching.register_commands(bot)
     srch = Search()
     srch.register_commands(bot)
-
+    bind = Bind()
+    bind.register_commands(bot)
 
 
     @bot.tree.command(name="edit")
@@ -79,4 +82,10 @@ def run_discord_bot():
             elif str(reaction.emoji) == "2️⃣":
                 await ctx.send("You chose option 2!")
 
-    bot.run(TOKEN)
+    try:
+        bot.run(TOKEN)
+    except KeyboardInterrupt:
+        print("Received KeyboardInterrupt. Shutting down.")
+    finally:
+        bind.close()  # Assuming `bind` is your instance of the `Bind` class that has the `close()` method
+        print("Database connection closed.")

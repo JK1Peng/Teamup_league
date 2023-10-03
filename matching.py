@@ -5,13 +5,11 @@ from discord.ext import commands
 from view import ReadyOrNotView
 from view import waiting_list
 
-
 modes_list = {
     "aram": {
         "url": "https://cdnb.artstation.com/p/assets/images/images/051/838/615/large/sam-snow-aramicon.jpg?1658300678"
     }
 }
-
 
 
 def format_as_table(headers, data):
@@ -75,6 +73,8 @@ def register_commands(bot):
         # view.game = modes_list[gamemode.value]
         view.initiatior = interaction.user
         view.players = players.value
+        view.rank = rank.name
+        view.gamemode = gamemode.name
         # waiting_list.append(interaction.user)
         await view.send(interaction)
 
@@ -86,9 +86,10 @@ def register_commands(bot):
             for i in waiting_list[interaction.user.id]:
                 data.append([i.name,"testing", "testing"])
         
-        
         table = format_as_table(headers, data)
-        await interaction.response.send_message(f'{table}')
+        await interaction.user.send(f'{table}')  # 发送DM到用户
+        await interaction.response.send_message('I have sent you a table in DM!')  # 反馈给用户
+
 
 
 

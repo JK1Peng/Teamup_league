@@ -14,6 +14,8 @@ class ReadyOrNotView(discord.ui.View):
         self.quit_user = []
         self.initiatior = None  # The user who started the invite
         self.game = {}
+        self.gamemode = None
+        self.rank = None
         self.players = 0  # Number of players the initiator is looking for
 
     # Function to send an initial message (or embed) with this view
@@ -31,7 +33,7 @@ class ReadyOrNotView(discord.ui.View):
     # Create an embed that shows who initiated the invite, who joined, and who declined.
     def create_embed(self):
         if self.initiatior:
-            desc = f"{self.initiatior.display_name} is looking for another {self.players} players"
+            desc = f"{self.initiatior.display_name} is looking for {self.rank} players, need {self.players} "
         else:
             desc = "Initiator is unknown."
         embed = discord.Embed(title="Let's get together", description=desc)
@@ -56,8 +58,8 @@ class ReadyOrNotView(discord.ui.View):
 
     # Update the message with the current state of who joined and declined
     async def update_message(self):
-        if self.check_players():
-                self.disable_buttons()
+        # if self.check_players():
+        #         self.disable_buttons()
         embed = self.create_embed()
         await self.message.edit(view=self, embed=embed)
 
@@ -70,7 +72,8 @@ class ReadyOrNotView(discord.ui.View):
         for user_id in [self.initiatior.id, interaction.user.id]:
             if user_id not in waiting_list:
                 waiting_list[user_id] = []
-        waiting_list[self.initiatior.id].append(interaction.user)
+        if interaction.user not in waiting_list[self.initiatior.id]:
+            waiting_list[self.initiatior.id].append(interaction.user)
         await self.update_message()
 
     # Button interaction for quit，write by yubao
