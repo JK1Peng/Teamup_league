@@ -2,6 +2,7 @@ import asyncio
 import discord
 from discord import app_commands
 from discord.ext import commands
+from discord import Embed
 from view import ReadyOrNotView
 from view import waiting_list
 
@@ -78,17 +79,29 @@ def register_commands(bot):
         # waiting_list.append(interaction.user)
         await view.send(interaction)
 
-    @bot.tree.command(name='table', description = "return table")
+    @bot.tree.command(name='table', description="return table")
     async def send_table(interaction: discord.Interaction):
-        headers = ["Player :"+interaction.user.name, "In game name", "OPGG link"]
+        headers = ["Player", "In game name", "OPGG link"]
         data  = []
         if interaction.user.id in waiting_list:
             for i in waiting_list[interaction.user.id]:
-                data.append([i.name,"testing", "testing"])
+                data.append([i.name, "testing", "testing"])
         
-        table = format_as_table(headers, data)
-        await interaction.user.send(f'{table}')  # 发送DM到用户
-        await interaction.response.send_message('I have sent you a table in DM!')  # 反馈给用户
+        # 创建一个嵌入对象
+        embed = Embed(title="Pending member list", description="players trying to get in", color=0x3498db)
+
+        # 遍历数据并添加到嵌入对象中
+        for row in data:
+            # 你可能希望用实际数据替换 "In-Game Name" 和 "OPGG Link" 
+            embed.add_field(name=row[0], value=f"In-Game Name: {row[1]}\nOPGG Link: [Click Here]({row[2]})", inline=False)
+
+        # 发送嵌入消息到用户
+        await interaction.user.send(embed=embed)
+        await interaction.response.send_message('I have sent you a table in DM!', ephemeral=True)
+
+
+
+
 
 
 
