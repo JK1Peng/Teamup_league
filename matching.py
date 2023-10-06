@@ -1,5 +1,7 @@
 import asyncio
 import discord
+import sqlite3
+from urllib.parse import quote
 from discord import app_commands
 from discord.ext import commands
 from discord import Embed
@@ -88,7 +90,7 @@ def register_commands(bot):
                 data.append([i.name, "testing", "testing"])
         
         # 创建一个嵌入对象
-        embed = Embed(title="Pending member list", description="players trying to get in", color=0x3498db)
+        embed = Embed(title="Pending member list", color=0x3498db)
 
         # 遍历数据并添加到嵌入对象中
         for row in data:
