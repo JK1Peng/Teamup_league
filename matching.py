@@ -7,6 +7,7 @@ from discord.ext import commands
 from discord import Embed
 from view import ReadyOrNotView
 from view import waiting_list
+from getrank import get_opgg_ranking
 
 modes_list = {
     "aram": {
@@ -83,30 +84,39 @@ def register_commands(bot):
 
     @bot.tree.command(name='table', description="return table")
     async def send_table(interaction: discord.Interaction):
-        headers = ["Player", "In game name", "OPGG link"]
-        data  = []
+        # 创建嵌入对象
+        embed = discord.Embed(title="Pending member list", color=0x3498db)
+
+        # 检查用户是否在等待列表中
         if interaction.user.id in waiting_list:
+            # 连接到数据库
+            conn = sqlite3.connect('bindings.db')
+            cursor = conn.cursor()
+
             for i in waiting_list[interaction.user.id]:
-                data.append([i.name, "testing", "testing"])
-        
-        # 创建一个嵌入对象
-        embed = Embed(title="Pending member list", color=0x3498db)
+                # 获取玩家的所有游戏ID和地区
+                cursor.execute("SELECT game_id, region FROM user_bindings WHERE dc_id=?", (i.id,))
+                rows = cursor.fetchall()
 
-        # 遍历数据并添加到嵌入对象中
-        for row in data:
-            # 你可能希望用实际数据替换 "In-Game Name" 和 "OPGG Link" 
-            embed.add_field(name=row[0], value=f"In-Game Name: {row[1]}\nOPGG Link: [Click Here]({row[2]})", inline=False)
+                # 如果数据库中没有找到条目，添加一个占位信息
+                if not rows:
+                    embed.add_field(name=i.name, value="No game IDs found.", inline=False)
+                    continue
 
-        # 发送嵌入消息到用户
+                game_info = ""
+                for game_id, region in rows:
+                    opgg_link = f"https://{region}.op.gg/summoner/userName={game_id}"
+                    # solorank = {get_opgg_ranking(game_id,region)}
+                    game_info += f"In-Game Name: {game_id}\nOPGG Link: [Click Here]({opgg_link})\n\n"
+
+                # 添加一个包含所有游戏信息的字段
+                embed.add_field(name=i.name, value=game_info.strip(), inline=False)
+            
+            conn.close()
+        else:
+            # 如果用户不在等待列表中，发送一个信息
+            embed.description = "You are not on the waiting list."
+
+        # 发送嵌入消息给用户
         await interaction.user.send(embed=embed)
         await interaction.response.send_message('I have sent you a table in DM!', ephemeral=True)
-
-
-
-
-
-
-
-
-
-

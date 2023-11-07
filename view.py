@@ -80,8 +80,8 @@ class ReadyOrNotView(discord.ui.View):
     # Button interaction for joining
     @discord.ui.button(label="Join", style=discord.ButtonStyle.green)
     async def join_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if interaction.user == self.initiatior:
-            button.disabled = True           
+        # if interaction.user == self.initiatior:
+        #     button.disabled = True           
         await interaction.response.defer()
         if interaction.user.display_name not in self.joined_users:
             self.joined_users.append(interaction.user.display_name)

@@ -51,14 +51,24 @@ class Bind:
         ])
         @bot.tree.command(name="bind", description="Bind your DC ID with a Game ID")
         async def bind(interaction: discord.Interaction, game_id: str, region: app_commands.Choice[str]):
-            normalized_game_id = game_id.replace(" ", "").lower()  
-            # Check if the normalized_game_id already exists for the user
+            normalized_game_id = game_id.replace(" ", "").lower()
+            # 检查用户已经绑定了多少个游戏ID
+            self.cursor.execute("SELECT COUNT(*) FROM user_bindings WHERE dc_id = ?", (interaction.user.id,))
+            (number_of_bindings,) = self.cursor.fetchone()
+
+            # 如果用户已经有两个绑定，则阻止他们添加新的绑定
+            if number_of_bindings >= 2:
+                await interaction.response.send_message(f'{interaction.user.mention}, you can only bind up to 2 game IDs.', ephemeral=True)
+                return
+
+            # 检查是否已存在相同的游戏ID绑定
             self.cursor.execute("SELECT game_id FROM user_bindings WHERE dc_id = ? AND game_id = ?", (interaction.user.id, normalized_game_id))
             row = self.cursor.fetchone()
             if row:
-                await interaction.response.send_message(f'{interaction.user.mention}, you have already bound the game ID {game_id} in region {region.name}.')
+                await interaction.response.send_message(f'{interaction.user.mention}, you have already bound the game ID {game_id} in region {region.name}.', ephemeral=True)
                 return
-            # Insert the game_id since it doesn't exist
+
+            # 插入新的绑定
             self.cursor.execute("INSERT INTO user_bindings (dc_id, game_id, region) VALUES (?, ?, ?)", (interaction.user.id, normalized_game_id, region.name))
             self.conn.commit()
 
